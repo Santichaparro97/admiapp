@@ -263,12 +263,9 @@ input, select, textarea, button { font-family: inherit; }
   font-variant-numeric: tabular-nums;
 }
 
-/* === Saludo + frase motivadora === */
+/* === Saludo + frase motivadora (con reloj integrado adentro) === */
 .greeting-card {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 20px;
-  padding: 24px 26px;
+  padding: 22px 26px 24px;
   background: linear-gradient(135deg, rgba(0, 240, 255, .08), rgba(162, 89, 255, .06));
   border: 1px solid var(--line-strong);
   border-radius: 14px;
@@ -283,9 +280,25 @@ input, select, textarea, button { font-family: inherit; }
   background: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, .15), transparent 40%);
   pointer-events: none;
 }
-.greeting-text { position: relative; z-index: 1; }
+.greeting-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+.greeting-body {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
 .greeting-date {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: .82rem;
   color: var(--neon-cyan);
   letter-spacing: .12em;
@@ -310,7 +323,6 @@ input, select, textarea, button { font-family: inherit; }
 .greeting-quote {
   position: relative;
   padding-left: 32px;
-  z-index: 1;
 }
 .quote-mark {
   position: absolute;
@@ -335,7 +347,8 @@ input, select, textarea, button { font-family: inherit; }
 .quote-author::before { content: '— '; }
 
 @media (max-width: 900px) {
-  .greeting-card { grid-template-columns: 1fr; gap: 16px; padding: 18px 20px; }
+  .greeting-card { padding: 18px 20px 20px; }
+  .greeting-body { grid-template-columns: 1fr; gap: 14px; }
   .neon-clock { padding: 5px 10px; }
   .neon-clock #clock-time { font-size: .82rem; letter-spacing: .08em; }
 }

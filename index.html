@@ -75,26 +75,29 @@
     <main class="main">
       <header class="topbar">
         <h1 id="page-title">Dashboard</h1>
-        <div class="topbar-right">
-          <span id="current-user" class="muted-sm"></span>
-          <div id="neon-clock" class="neon-clock" title="Hora Argentina">
-            <span id="clock-time">--:--:--</span>
-          </div>
-        </div>
+        <!-- Email del usuario oculto (se sigue cargando para auth pero no se muestra) -->
+        <span id="current-user" hidden></span>
       </header>
 
       <!-- DASHBOARD VIEW -->
       <section id="page-dashboard" class="page">
-        <!-- Saludo + frase motivadora -->
+        <!-- Saludo + reloj + frase motivadora (todo integrado) -->
         <div class="greeting-card">
-          <div class="greeting-text">
+          <!-- Fila superior: fecha (izq) + reloj neon (der) -->
+          <div class="greeting-header">
             <p class="greeting-date" id="greeting-date">—</p>
-            <h2 class="greeting-msg" id="greeting-msg">Bienvenido</h2>
+            <div id="neon-clock" class="neon-clock" title="Hora Argentina">
+              <span id="clock-time">--:--:--</span>
+            </div>
           </div>
-          <div class="greeting-quote">
-            <svg class="quote-mark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M9 7H5a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2H4v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2zm10 0h-4a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2h-1v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2z"/></svg>
-            <p class="quote-text" id="quote-text">Cargando frase del día...</p>
-            <p class="quote-author" id="quote-author">—</p>
+          <!-- Fila inferior: saludo (izq) + frase (der) -->
+          <div class="greeting-body">
+            <h2 class="greeting-msg" id="greeting-msg">Bienvenido</h2>
+            <div class="greeting-quote">
+              <svg class="quote-mark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M9 7H5a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2H4v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2zm10 0h-4a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2h-1v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2z"/></svg>
+              <p class="quote-text" id="quote-text">Cargando frase del día...</p>
+              <p class="quote-author" id="quote-author">—</p>
+            </div>
           </div>
         </div>
 
