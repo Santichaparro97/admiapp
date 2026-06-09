@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · De La Ostia Perfumes</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- LOGIN VIEW -->
+  <div id="view-login" class="view view-login">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="login-logo">DLO</div>
+        <h1>Admin · De La Ostia Perfumes</h1>
+        <p class="muted">Panel de administración</p>
+      </div>
+      <form id="login-form" class="login-form">
+        <label>
+          <span>Email</span>
+          <input id="login-email" type="email" required autocomplete="email" />
+        </label>
+        <label>
+          <span>Contraseña</span>
+          <input id="login-pass" type="password" required autocomplete="current-password" />
+        </label>
+        <button type="submit" class="btn-primary" id="login-btn">Ingresar</button>
+        <p id="login-error" class="login-error" hidden></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- APP SHELL (visible cuando hay sesión) -->
+  <div id="view-app" class="view view-app" hidden>
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark">DLO</div>
+        <div>
+          <p class="brand-name">De La Ostia</p>
+          <p class="brand-sub">Admin Panel</p>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-item active" data-route="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Dashboard
+        </a>
+        <a href="#products" class="nav-item" data-route="products">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4 8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/><path d="M12 11v10"/></svg>
+          Productos
+        </a>
+        <a href="#orders" class="nav-item" data-route="orders">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Pedidos
+          <span id="pending-badge" class="badge" hidden>0</span>
+        </a>
+        <a href="#settings" class="nav-item" data-route="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Configuración
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a id="go-to-web" href="#" target="_blank" rel="noopener" class="goto-web-btn">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          IR A LA WEB
+        </a>
+        <button id="logout-btn" class="logout-btn">Salir</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h1 id="page-title">Dashboard</h1>
+        <div class="topbar-right">
+          <span id="current-user" class="muted-sm"></span>
+        </div>
+      </header>
+
+      <!-- DASHBOARD VIEW -->
+      <section id="page-dashboard" class="page">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">Productos activos</p>
+            <p class="stat-value" id="stat-products">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Sin stock</p>
+            <p class="stat-value" id="stat-no-stock">—</p>
+          </div>
+          <div class="stat-card highlight">
+            <p class="stat-label">Pedidos pendientes</p>
+            <p class="stat-value" id="stat-pending">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Pedidos (7 días)</p>
+            <p class="stat-value" id="stat-week">—</p>
+          </div>
+          <div class="stat-card revenue">
+            <p class="stat-label">Ingresos (30 días)</p>
+            <p class="stat-value" id="stat-revenue">$ —</p>
+          </div>
+        </div>
+        <div class="recent-orders">
+          <h2>Pedidos recientes</h2>
+          <div id="recent-orders-list" class="orders-list"></div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS VIEW -->
+      <section id="page-products" class="page" hidden>
+        <div class="page-actions">
+          <input id="products-search" type="search" placeholder="Buscar producto..." />
+          <select id="products-filter-cat">
+            <option value="">Todas las categorías</option>
+          </select>
+          <button class="btn-primary" id="btn-new-product">+ Nuevo producto</button>
+        </div>
+        <div id="products-table-wrap" class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Imagen</th>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Activo</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+        <div id="products-pagination" class="pagination"></div>
+      </section>
+
+      <!-- ORDERS VIEW -->
+      <section id="page-orders" class="page" hidden>
+        <div class="page-actions">
+          <select id="orders-filter-status">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En proceso</option>
+            <option value="enviado">Enviado</option>
+            <option value="entregado">Entregado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div id="orders-table-wrap" class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Cliente</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SETTINGS VIEW -->
+      <section id="page-settings" class="page" hidden>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h2>Información del negocio</h2>
+            <label><span>Nombre de la tienda</span><input data-setting="title" /></label>
+            <label><span>Tagline</span><input data-setting="tagline" /></label>
+            <label><span>Highlight (pill verde del header)</span><input data-setting="highlight" /></label>
+          </div>
+          <div class="settings-card">
+            <h2>Contacto</h2>
+            <label><span>Teléfono WhatsApp (sin + ni espacios)</span><input data-setting="phone" /></label>
+            <label><span>Usuario Instagram (sin @)</span><input data-setting="instagram" /></label>
+            <label><span>Mensaje prearmado de mayorista</span><input data-setting="whatsapp_msg" /></label>
+          </div>
+          <button class="btn-primary" id="save-settings">Guardar cambios</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- PRODUCT MODAL -->
+  <div id="product-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-content modal-product">
+      <button class="modal-close" data-close>×</button>
+      <h2 id="product-modal-title">Nuevo producto</h2>
+      <form id="product-form" class="product-form">
+        <div class="form-row">
+          <label class="form-full">
+            <span>Título</span>
+            <input name="title" required />
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            <span>Categoría</span>
+            <input name="category" list="cat-list" required />
+            <datalist id="cat-list"></datalist>
+          </label>
+          <label>
+            <span>Marca</span>
+            <input name="brand" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            <span>Precio</span>
+            <input name="price" type="number" min="0" step="1" required />
+          </label>
+          <label>
+            <span>Precio original (tachado, opcional)</span>
+            <input name="original_price" type="number" min="0" step="1" />
+          </label>
+        </div>
+        <div class="form-row">
+          <label>
+            <span>Stock</span>
+            <input name="stock" type="number" min="0" step="1" />
+          </label>
+          <label class="checkbox-label">
+            <input name="handle_stock" type="checkbox" checked />
+            <span>Controlar stock</span>
+          </label>
+          <label class="checkbox-label">
+            <input name="active" type="checkbox" checked />
+            <span>Visible en tienda</span>
+          </label>
+          <label class="checkbox-label">
+            <input name="featured" type="checkbox" />
+            <span>Destacado</span>
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="form-full">
+            <span>Descripción</span>
+            <textarea name="description" rows="3"></textarea>
+          </label>
+        </div>
+        <div class="form-row">
+          <label class="form-full">
+            <span>Imágenes (URLs separadas por coma)</span>
+            <textarea name="images" rows="2" placeholder="https://...jpg, https://...jpg"></textarea>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close>Cancelar</button>
+          <button type="submit" class="btn-primary" id="product-save-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ORDER DETAIL MODAL -->
+  <div id="order-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-content modal-order">
+      <button class="modal-close" data-close>×</button>
+      <div id="order-detail"></div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- Supabase JS SDK via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

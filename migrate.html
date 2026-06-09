@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Migración · Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body style="padding:40px 20px">
+  <div style="max-width:680px;margin:0 auto">
+    <h1 style="font-family:'Space Grotesk',sans-serif;font-size:1.6rem;margin-bottom:6px">Migración inicial</h1>
+    <p class="muted" style="margin:0 0 24px">Sube los 1444 productos del data.json de la web pública a la tabla <code>products</code> de Supabase. Hacelo UNA sola vez al inicio.</p>
+
+    <div class="settings-card" style="margin-bottom:18px">
+      <h2 style="margin-top:0">Paso 1 — Subí el data.json</h2>
+      <p class="muted-sm" style="margin:0 0 12px">Lo encontrás en <code>perfumescyc-clone/data/data.json</code>. Es el JSON con productos y tenant.</p>
+      <input type="file" id="data-file" accept=".json" style="padding:10px;background:var(--bg-2);border:1px solid var(--line);border-radius:8px;color:var(--text);width:100%" />
+      <div id="file-info" class="muted-sm" style="margin-top:10px"></div>
+    </div>
+
+    <div class="settings-card" style="margin-bottom:18px">
+      <h2 style="margin-top:0">Paso 2 — Login</h2>
+      <p class="muted-sm" style="margin:0 0 12px">Para escribir en la DB necesitás estar autenticado.</p>
+      <div id="auth-status">Cargando…</div>
+      <div id="auth-form" hidden style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+        <input id="m-email" type="email" placeholder="email del admin" style="padding:9px 12px;background:var(--bg-2);border:1px solid var(--line);color:var(--text);border-radius:8px" />
+        <input id="m-pass" type="password" placeholder="contraseña" style="padding:9px 12px;background:var(--bg-2);border:1px solid var(--line);color:var(--text);border-radius:8px" />
+        <button class="btn-primary" id="m-login">Login</button>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <h2 style="margin-top:0">Paso 3 — Migrar</h2>
+      <p class="muted-sm" style="margin:0 0 14px">Sube productos en batches de 100. Si un producto ya existe (mismo <code>legacy_id</code>), lo salta.</p>
+      <button class="btn-primary" id="migrate-btn" disabled>Iniciar migración</button>
+      <div id="progress" style="margin-top:16px"></div>
+    </div>
+
+    <div style="margin-top:24px;text-align:center">
+      <a href="index.html" style="color:var(--neon-cyan);font-size:.9rem">← Volver al admin</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="config.js"></script>
+  <script>
+  (function () {
+    if (!window.SUPABASE_CONFIG || window.SUPABASE_CONFIG.url.includes('YOUR-PROJECT')) {
+      document.body.innerHTML = '<p style="color:#ff4d6d;padding:40px;text-align:center">Configurá <code>config.js</code> primero.</p>';
+      return;
+    }
+    const sb = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    const $ = (s) => document.querySelector(s);
+    let DATA = null;
+    let LOGGED = false;
+
+    // Paso 1: archivo
+    $('#data-file').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        const txt = await file.text();
+        DATA = JSON.parse(txt);
+        const total = (DATA.products || []).length;
+        $('#file-info').innerHTML = `✓ Archivo cargado: <strong>${total} productos</strong> encontrados.`;
+        $('#file-info').style.color = 'var(--success)';
+        updateButton();
+      } catch (err) {
+        $('#file-info').textContent = 'Error: ' + err.message;
+        $('#file-info').style.color = 'var(--danger)';
+      }
+    });
+
+    // Paso 2: auth
+    async function checkAuth() {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        LOGGED = true;
+        $('#auth-status').innerHTML = `✓ Autenticado como <strong>${session.user.email}</strong>`;
+        $('#auth-status').style.color = 'var(--success)';
+        $('#auth-form').hidden = true;
+      } else {
+        LOGGED = false;
+        $('#auth-status').textContent = 'No autenticado. Hacé login para continuar.';
+        $('#auth-status').style.color = 'var(--muted)';
+        $('#auth-form').hidden = false;
+      }
+      updateButton();
+    }
+    $('#m-login').addEventListener('click', async () => {
+      const email = $('#m-email').value.trim();
+      const pass = $('#m-pass').value;
+      $('#m-login').disabled = true;
+      $('#m-login').textContent = 'Ingresando...';
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      $('#m-login').disabled = false;
+      $('#m-login').textContent = 'Login';
+      if (error) { alert('Error: ' + error.message); return; }
+      await checkAuth();
+    });
+    sb.auth.onAuthStateChange(() => checkAuth());
+
+    function updateButton() {
+      $('#migrate-btn').disabled = !(DATA && LOGGED);
+    }
+
+    // Paso 3: migrar
+    $('#migrate-btn').addEventListener('click', async () => {
+      if (!DATA || !LOGGED) return;
+      const products = DATA.products || [];
+      const BATCH = 100;
+      let done = 0, errors = 0;
+      const prog = $('#progress');
+      $('#migrate-btn').disabled = true;
+      $('#migrate-btn').textContent = 'Migrando...';
+
+      for (let i = 0; i < products.length; i += BATCH) {
+        const slice = products.slice(i, i + BATCH);
+        const rows = slice.map(p => {
+          const cleanImages = (p.images || []).map(u =>
+            (typeof u === 'string' ? u.replace('tap-pencyinfra-prod.s3.amazonaws.com', 'pency-images.nyc3.digitaloceanspaces.com') : u)
+          );
+          // Detectar marca a partir del título
+          let brand = '';
+          const m = p.title.match(/-\s*([^-]+?)(?:\s+AAA|\s+x\d+ml|$)/i);
+          if (m) brand = m[1].trim();
+          return {
+            legacy_id: p.id || null,
+            title: p.title || 'Sin título',
+            slug: p.slug || null,
+            category: p.category || 'Sin categoría',
+            brand: brand || null,
+            description: p.description || '',
+            price: p.price || 0,
+            original_price: p.originalPrice || 0,
+            stock: p.currentStock || 0,
+            handle_stock: p.handleStock !== false,
+            images: cleanImages,
+            featured: p.featured === true,
+            active: p.type !== 'hidden',
+            position: p.position || 0,
+          };
+        });
+        // upsert by legacy_id (evita duplicados si lo corres dos veces)
+        const { error } = await sb.from('products').upsert(rows, {
+          onConflict: 'legacy_id',
+          ignoreDuplicates: false,
+        });
+        if (error) {
+          errors += slice.length;
+          console.error('Batch error:', error);
+        } else {
+          done += slice.length;
+        }
+        prog.innerHTML = `
+          <div style="background:var(--bg-2);height:8px;border-radius:4px;overflow:hidden;margin-bottom:8px">
+            <div style="background:var(--neon-cyan);height:100%;width:${(done + errors) / products.length * 100}%;transition:width .2s"></div>
+          </div>
+          <p class="muted-sm">${done + errors} / ${products.length} (${done} OK${errors ? ', ' + errors + ' errores' : ''})</p>
+        `;
+        await new Promise(r => setTimeout(r, 100)); // pausa para no saturar
+      }
+
+      $('#migrate-btn').textContent = '✓ Completado';
+      prog.innerHTML += `<p style="color:${errors ? 'var(--warn)' : 'var(--success)'};margin-top:10px"><strong>Migración terminada.</strong> ${done} productos creados/actualizados${errors ? `, ${errors} con errores (mirá la consola)` : ''}.</p>`;
+    });
+
+    checkAuth();
+  })();
+  </script>
+</body>
+</html>
