@@ -77,11 +77,27 @@
         <h1 id="page-title">Dashboard</h1>
         <div class="topbar-right">
           <span id="current-user" class="muted-sm"></span>
+          <div id="neon-clock" class="neon-clock" title="Hora Argentina">
+            <span id="clock-time">--:--:--</span>
+          </div>
         </div>
       </header>
 
       <!-- DASHBOARD VIEW -->
       <section id="page-dashboard" class="page">
+        <!-- Saludo + frase motivadora -->
+        <div class="greeting-card">
+          <div class="greeting-text">
+            <p class="greeting-date" id="greeting-date">—</p>
+            <h2 class="greeting-msg" id="greeting-msg">Bienvenido</h2>
+          </div>
+          <div class="greeting-quote">
+            <svg class="quote-mark" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M9 7H5a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2H4v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2zm10 0h-4a2 2 0 00-2 2v4a2 2 0 002 2h2v2a2 2 0 01-2 2h-1v2h1a4 4 0 004-4V9a2 2 0 00-2-2h2z"/></svg>
+            <p class="quote-text" id="quote-text">Cargando frase del día...</p>
+            <p class="quote-author" id="quote-author">—</p>
+          </div>
+        </div>
+
         <div class="stats-grid">
           <div class="stat-card">
             <p class="stat-label">Productos activos</p>
@@ -171,6 +187,10 @@
       <!-- SETTINGS VIEW -->
       <section id="page-settings" class="page" hidden>
         <div class="settings-grid">
+          <div class="settings-card">
+            <h2>Tu cuenta</h2>
+            <label><span>Tu nombre (para el saludo)</span><input data-setting="admin_name" placeholder="Ej: Santi" /></label>
+          </div>
           <div class="settings-card">
             <h2>Información del negocio</h2>
             <label><span>Nombre de la tienda</span><input data-setting="title" /></label>

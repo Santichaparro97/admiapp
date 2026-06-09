@@ -81,6 +81,131 @@
     if (gotoWeb && window.PUBLIC_WEB_URL) gotoWeb.href = window.PUBLIC_WEB_URL;
     initRouter();
     loadDashboard();
+    initNeonClock();
+    initGreeting();
+    loadDailyQuote();
+  }
+
+  // ===== RELOJ NEON =====
+  // Hora Argentina (America/Argentina/Buenos_Aires) actualizada cada segundo
+  function initNeonClock() {
+    const clockEl = document.getElementById('clock-time');
+    if (!clockEl) return;
+    const formatter = new Intl.DateTimeFormat('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+    });
+    function tick() {
+      clockEl.textContent = formatter.format(new Date());
+    }
+    tick();
+    setInterval(tick, 1000);
+  }
+
+  // ===== SALUDO + FECHA =====
+  async function initGreeting() {
+    const msgEl = document.getElementById('greeting-msg');
+    const dateEl = document.getElementById('greeting-date');
+    if (!msgEl || !dateEl) return;
+
+    // Cargar nombre del admin desde settings
+    let adminName = '';
+    try {
+      const { data } = await sb.from('settings').select('value').eq('key', 'admin_name').single();
+      if (data && data.value) {
+        let v = data.value;
+        if (typeof v === 'string') v = v.replace(/^"|"$/g, '');
+        adminName = v;
+      }
+    } catch (e) { /* sin nombre todavía, se saluda genérico */ }
+
+    // Hora Argentina para determinar el saludo
+    const argHour = parseInt(
+      new Intl.DateTimeFormat('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        hour: '2-digit', hour12: false,
+      }).format(new Date()),
+      10
+    );
+    let saludo;
+    if (argHour >= 6 && argHour < 13)       saludo = 'Buenos días';
+    else if (argHour >= 13 && argHour < 20) saludo = 'Buenas tardes';
+    else                                    saludo = 'Buenas noches';
+
+    const nameHtml = adminName ? `, <span class="name">${escapeHtmlAdmin(adminName)}</span>` : '';
+    msgEl.innerHTML = `${saludo}${nameHtml}`;
+
+    // Fecha completa en español: "lunes, 9 de junio de 2026"
+    const fecha = new Intl.DateTimeFormat('es-AR', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(new Date());
+    dateEl.textContent = fecha;
+  }
+  function escapeHtmlAdmin(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ===== FRASE MOTIVADORA =====
+  // Intenta traer del API externo ZenQuotes (today endpoint). Si falla,
+  // usa una lista local en español con rotación por día.
+  const FALLBACK_QUOTES = [
+    { text: 'El éxito es la suma de pequeños esfuerzos repetidos día tras día.', author: 'Robert Collier' },
+    { text: 'No esperes el momento adecuado. Crealo vos.', author: 'George Bernard Shaw' },
+    { text: 'La calidad nunca es un accidente; siempre es resultado de un esfuerzo inteligente.', author: 'John Ruskin' },
+    { text: 'Empezá donde estás. Usá lo que tenés. Hacé lo que podés.', author: 'Arthur Ashe' },
+    { text: 'El que tiene un por qué para vivir puede soportar cualquier cómo.', author: 'Friedrich Nietzsche' },
+    { text: 'No cuentes los días, hacé que los días cuenten.', author: 'Muhammad Ali' },
+    { text: 'Una meta sin un plan es solo un deseo.', author: 'Antoine de Saint-Exupéry' },
+    { text: 'El cliente más insatisfecho es tu mejor fuente de aprendizaje.', author: 'Bill Gates' },
+    { text: 'No tengas miedo de renunciar a lo bueno para perseguir lo grandioso.', author: 'John D. Rockefeller' },
+    { text: 'La excelencia no es una habilidad, es una actitud.', author: 'Ralph Marston' },
+    { text: 'Los grandes éxitos requieren grandes ambiciones.', author: 'Heráclito' },
+    { text: 'Hacé hoy lo que otros no harán, para tener mañana lo que otros no tendrán.', author: 'Jerry Rice' },
+    { text: 'La motivación te pone en marcha; el hábito te mantiene andando.', author: 'Jim Ryun' },
+    { text: 'Si no podés hacer cosas grandes, hacé cosas pequeñas de manera grandiosa.', author: 'Napoleon Hill' },
+    { text: 'Cada problema es una oportunidad disfrazada.', author: 'John Adams' },
+    { text: 'El obstáculo es el camino.', author: 'Marco Aurelio' },
+    { text: 'Si querés algo que nunca tuviste, hacé algo que nunca hiciste.', author: 'Thomas Jefferson' },
+    { text: 'No hay viento favorable para quien no sabe a dónde va.', author: 'Séneca' },
+    { text: 'La mejor manera de predecir el futuro es crearlo.', author: 'Peter Drucker' },
+    { text: 'Tu actitud, no tu aptitud, determina tu altitud.', author: 'Zig Ziglar' },
+    { text: 'La perseverancia es el secreto del éxito.', author: 'Walt Disney' },
+    { text: 'Lo que la mente puede concebir y creer, lo puede lograr.', author: 'Napoleon Hill' },
+    { text: 'Hacé que cada día cuente. Hacé que tu vida sea extraordinaria.', author: 'Robin Williams' },
+    { text: 'El fracaso es la oportunidad de comenzar de nuevo con más inteligencia.', author: 'Henry Ford' },
+    { text: 'La disciplina es el puente entre las metas y los logros.', author: 'Jim Rohn' },
+    { text: 'No esperes que las oportunidades lleguen, salí a buscarlas.', author: 'Anónimo' },
+    { text: 'Tu único límite es vos mismo.', author: 'Anónimo' },
+    { text: 'La excelencia es hacer cosas ordinarias extraordinariamente bien.', author: 'John W. Gardner' },
+    { text: 'Sembrá un acto y cosecharás un hábito; sembrá un hábito y cosecharás un carácter.', author: 'Charles Reade' },
+    { text: 'El que se mueve, ya ganó la mitad de la batalla.', author: 'Anónimo' },
+  ];
+
+  async function loadDailyQuote() {
+    const textEl = document.getElementById('quote-text');
+    const authorEl = document.getElementById('quote-author');
+    if (!textEl) return;
+
+    // Intentar API externa (ZenQuotes today, sin key)
+    try {
+      const resp = await fetch('https://zenquotes.io/api/today', { mode: 'cors' });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (Array.isArray(data) && data[0] && data[0].q) {
+          textEl.textContent = data[0].q;
+          authorEl.textContent = data[0].a || 'Anónimo';
+          return;
+        }
+      }
+    } catch (e) { /* CORS / sin red → fallback */ }
+
+    // Fallback: lista local rotando por día del año
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    const q = FALLBACK_QUOTES[dayOfYear % FALLBACK_QUOTES.length];
+    textEl.textContent = q.text;
+    authorEl.textContent = q.author;
   }
 
   $('#login-form').addEventListener('submit', async (e) => {

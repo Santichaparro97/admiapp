@@ -240,7 +240,105 @@ input, select, textarea, button { font-family: inherit; }
   position: sticky; top: 0; z-index: 10;
 }
 .topbar h1 { font-size: 1.15rem; margin: 0; font-weight: 600; }
-.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-right { display: flex; align-items: center; gap: 18px; }
+
+/* === Reloj neon arriba a la derecha === */
+.neon-clock {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(0, 240, 255, .06);
+  border: 1px solid rgba(0, 240, 255, .35);
+  box-shadow: 0 0 18px rgba(0, 240, 255, .15) inset, 0 0 18px rgba(0, 240, 255, .2);
+}
+.neon-clock #clock-time {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: .12em;
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 4px rgba(0, 240, 255, .8),
+    0 0 12px rgba(0, 240, 255, .5),
+    0 0 24px rgba(0, 240, 255, .3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Saludo + frase motivadora === */
+.greeting-card {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  padding: 24px 26px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, .08), rgba(162, 89, 255, .06));
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.greeting-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, .15), transparent 40%);
+  pointer-events: none;
+}
+.greeting-text { position: relative; z-index: 1; }
+.greeting-date {
+  margin: 0 0 6px;
+  font-size: .82rem;
+  color: var(--neon-cyan);
+  letter-spacing: .12em;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+.greeting-msg {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.01em;
+  line-height: 1.2;
+}
+.greeting-msg .name {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.greeting-quote {
+  position: relative;
+  padding-left: 32px;
+  z-index: 1;
+}
+.quote-mark {
+  position: absolute;
+  top: 2px; left: 0;
+  color: var(--neon-cyan);
+  opacity: .55;
+}
+.quote-text {
+  margin: 0 0 8px;
+  font-style: italic;
+  font-size: .95rem;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+.quote-author {
+  margin: 0;
+  font-size: .78rem;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: .03em;
+}
+.quote-author::before { content: '— '; }
+
+@media (max-width: 900px) {
+  .greeting-card { grid-template-columns: 1fr; gap: 16px; padding: 18px 20px; }
+  .neon-clock { padding: 5px 10px; }
+  .neon-clock #clock-time { font-size: .82rem; letter-spacing: .08em; }
+}
 
 .page { padding: 24px 28px 60px; }
 .page-actions {
