@@ -12,5 +12,4 @@ window.SUPABASE_CONFIG = {
 };
 
 // URL de la web pública (la tienda que ven los clientes)
-// Cambiala por la URL exacta de tu Vercel
-window.PUBLIC_WEB_URL = 'https://webnahuel.vercel.app';
+window.PUBLIC_WEB_URL = 'https://delaostia.vercel.app';
